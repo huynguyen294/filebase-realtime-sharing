@@ -23,6 +23,3 @@ const defaultConfig = {
   appId: "",
   measurementId: "",
 };
-
-export * from "./utils";
-export default app;

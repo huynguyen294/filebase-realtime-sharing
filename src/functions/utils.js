@@ -1,4 +1,4 @@
-import app from ".";
+import { initFirebase } from ".";
 import { get, getDatabase, onValue, push, ref, remove, set } from "firebase/database";
 
 const sample = (d = [], fn = Math.random) => {
@@ -6,7 +6,7 @@ const sample = (d = [], fn = Math.random) => {
   return d[Math.round(fn() * (d.length - 1))];
 };
 
-export const generateUid = (limit = 16, fn = Math.random) => {
+const generateUid = (limit = 16, fn = Math.random) => {
   const allowedLetters = ["abcdefghijklmnopqrstuvwxyz", "ABCDEFGHIJKLMNOPQRSTUVWXYZ"].join("");
   const allowedChars = ["0123456789", allowedLetters].join("");
   const arr = [sample(allowedLetters, fn)];
@@ -17,12 +17,11 @@ export const generateUid = (limit = 16, fn = Math.random) => {
   return arr.join("");
 };
 
-const db = getDatabase(app);
 const getCurrentTimeInSeconds = () => Math.floor(Date.now() / 1000);
+let EXPIRE_TIME_SECONDS = 300;
 
-export const EXPIRE_TIME_SECONDS = 300;
-
-export const getFBUid = () => {
+const getFBUid = () => {
+  const db = getDatabase(initFirebase());
   let uid = localStorage.getItem("fb-uid");
   if (!uid) {
     uid = push(ref(db)).key;
@@ -31,12 +30,16 @@ export const getFBUid = () => {
   return uid;
 };
 
-export const deleteById = async (id) => {
+const deleteById = async (id) => {
+  const db = getDatabase(initFirebase());
   const newDocRef = ref(db, id);
   await remove(newDocRef);
 };
 
+export const deleteCode = async (code) => deleteById(`otps/${code}`);
+
 export const clearUpCode = async (uid) => {
+  const db = getDatabase(initFirebase());
   if (!uid) uid = localStorage.getItem("fb-uid");
   const dbRef = ref(db, `otps`);
   const snapshot = await get(dbRef);
@@ -56,6 +59,7 @@ export const clearUpCode = async (uid) => {
 };
 
 export const sendCode = async (onConnected, shouldCleanUp = true) => {
+  const db = getDatabase(initFirebase());
   const uid = getFBUid();
 
   let code = generateUid(6).toUpperCase();
@@ -85,12 +89,13 @@ export const sendCode = async (onConnected, shouldCleanUp = true) => {
 };
 
 export const sendData = async (data) => {
-  const db = getDatabase(app);
+  const db = getDatabase(initFirebase());
   let firebaseUid = localStorage.getItem("fb-uid");
   await set(ref(db, `${firebaseUid}`), data);
 };
 
 export const verify = async (code, getData = () => {}) => {
+  const db = getDatabase(initFirebase());
   const dbRef = ref(db, `otps/${code}`);
   const snapshot = await get(dbRef);
   if (snapshot.exists()) {
