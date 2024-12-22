@@ -1,0 +1,17 @@
+{
+  "name": "filebase-realtime-share",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "build": "vite build",
+    "dev": "vite"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "vite": "^6.0.5"
+  },
+  "peerDependencies": {
+    "firebase": "^11.1.0"
+  }
+}
